@@ -1,0 +1,10 @@
+ip: "127.0.0.1:4567"
+dsn: "root:root@tcp(127.0.0.1:3306)"
+dbName: "my_little_ps"
+dbParams: "charset=utf8mb4&parseTime=True&interpolateParams=true"
+prefork: false
+idleTimeoutSec: 60
+readTimeoutSec: 60
+writeTimeoutSec: 60
+shutdownTimeoutSec: 90
+location: "Europe/Moscow"
