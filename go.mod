@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/gofiber/fiber/v2 v2.23.0
+	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/spf13/viper v1.10.1
 	go.uber.org/zap v1.21.0
 	gorm.io/driver/postgres v1.3.1
@@ -13,6 +14,8 @@ require (
 require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
+	github.com/hashicorp/errwrap v1.0.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.10.1 // indirect
@@ -24,7 +27,8 @@ require (
 	github.com/jackc/pgx/v4 v4.14.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.4 // indirect
-	github.com/klauspost/compress v1.13.4 // indirect
+	github.com/klauspost/compress v1.13.6 // indirect
+	github.com/lib/pq v1.10.2 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect

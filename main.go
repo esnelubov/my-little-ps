@@ -32,10 +32,12 @@ func setUpRoutes(a *app.App) {
 }
 
 func main() {
-	Conf = config.New("dmr_settings")
+	Conf = config.New("settings")
 	Log = logger.New()
 	DB = database.New(Conf)
 	controllers.Setup(DB)
+	_ = controllers.Operation.DB
+	_ = controllers.Wallet.DB
 
 	shutdownTimeoutSec := Conf.GetDurationSec("shutdownTimeoutSec")
 

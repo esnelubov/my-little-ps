@@ -26,12 +26,11 @@ func New(name string) *Config {
 	vprConfig.AddConfigPath("~/")
 
 	vprConfig.SetDefault("ip", "127.0.0.1:3000")
-	vprConfig.SetDefault("dsn", "root:root@tcp(127.0.0.1:3306)/dropix_mobile_refill?charset=utf8mb4&parseTime=True")
+	vprConfig.SetDefault("dsn", "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable")
 	vprConfig.SetDefault("idleTimeoutSec", 15)
 	vprConfig.SetDefault("readTimeoutSec", 15)
 	vprConfig.SetDefault("writeTimeoutSec", 15)
 	vprConfig.SetDefault("shutdownTimeoutSec", 30)
-	vprConfig.SetDefault("location", "Europe/Moscow")
 
 	if err := vprConfig.ReadInConfig(); err != nil {
 		log.Fatalf("failed to read config: %s", err)
