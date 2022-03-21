@@ -5,8 +5,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"log"
+	"my-little-ps/api"
 	"my-little-ps/app"
 	"my-little-ps/config"
+	"my-little-ps/constants"
 	"my-little-ps/controllers"
 	"my-little-ps/database"
 	"my-little-ps/logger"
@@ -23,10 +25,9 @@ var (
 )
 
 func setUpRoutes(a *app.App) {
-	a.Get("/hello", routes.Hello)
 	//a.Get("/allbooks", routes.AllBooks)
 	//a.Get("/book/:id", routes.GetBook)
-	//a.Post("/book", routes.AddBook)
+	a.Post("/wallet", routes.AddWallet)
 	//a.Put("/book", routes.Update)
 	//a.Delete("/book", routes.Delete)
 }
@@ -35,7 +36,9 @@ func main() {
 	Conf = config.New("settings")
 	Log = logger.New()
 	DB = database.New(Conf)
+	constants.Setup()
 	controllers.Setup(DB)
+	api.Setup(controllers.Wallet)
 	_ = controllers.Operation.DB
 	_ = controllers.Wallet.DB
 
@@ -46,6 +49,7 @@ func main() {
 		IdleTimeout:  Conf.GetDurationSec("idleTimeoutSec"),
 		ReadTimeout:  Conf.GetDurationSec("readTimeoutSec"),
 		WriteTimeout: Conf.GetDurationSec("writeTimeoutSec"),
+		ErrorHandler: ErrorHandler,
 	})
 
 	a.Use(recover.New())
@@ -70,4 +74,8 @@ func main() {
 	fmt.Println("Shutting down...")
 	_ = a.GracefulShutdown(shutdownTimeoutSec)
 	_ = Log.Sync()
+}
+
+func ErrorHandler(ctx *fiber.Ctx, err error) error {
+	return ctx.Status(200).JSON(&routes.ResponseData{Payload: &routes.PayloadError{Error: err.Error()}})
 }

@@ -3,7 +3,7 @@ autoMigrate: true
 dsn: "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
 schemaName: "my_little_ps"
 prefork: false
-idleTimeoutSec: 60
-readTimeoutSec: 60
-writeTimeoutSec: 60
-shutdownTimeoutSec: 90
+idleTimeoutSec: 15
+readTimeoutSec: 15
+writeTimeoutSec: 15
+shutdownTimeoutSec: 60

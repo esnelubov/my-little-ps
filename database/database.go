@@ -92,3 +92,11 @@ func AutoMigrate(config config.IConfig) error {
 
 	return nil
 }
+
+func (db *DB) Create(value interface{}) error {
+	return db.gormDB.Create(value).Error
+}
+
+func (db *DB) Save(value interface{}) error {
+	return db.gormDB.Save(value).Error
+}
