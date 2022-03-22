@@ -28,6 +28,8 @@ func setUpRoutes(a *app.App) {
 	//a.Get("/allbooks", routes.AllBooks)
 	//a.Get("/book/:id", routes.GetBook)
 	a.Post("/wallet", routes.AddWallet)
+	a.Post("/receive_amount", routes.ReceiveAmount)
+	a.Post("/transfer_amount", routes.TransferAmount)
 	//a.Put("/book", routes.Update)
 	//a.Delete("/book", routes.Delete)
 }
@@ -38,9 +40,7 @@ func main() {
 	DB = database.New(Conf)
 	constants.Setup()
 	controllers.Setup(DB)
-	api.Setup(controllers.Wallet)
-	_ = controllers.Operation.DB
-	_ = controllers.Wallet.DB
+	api.Setup(controllers.Wallet, controllers.Operation, controllers.Currency)
 
 	shutdownTimeoutSec := Conf.GetDurationSec("shutdownTimeoutSec")
 

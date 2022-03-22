@@ -93,10 +93,45 @@ func AutoMigrate(config config.IConfig) error {
 	return nil
 }
 
+func (db *DB) Has(table interface{}, criteria map[string]interface{}) (bool, error) {
+	query := db.gormDB
+
+	for c, v := range criteria {
+		query.Where(c, v)
+	}
+
+	err := query.Take(&table).Error
+
+	if err == nil {
+		return true, nil
+	}
+
+	if err == gorm.ErrRecordNotFound {
+		return false, nil
+	}
+
+	return false, err
+}
+
 func (db *DB) Create(value interface{}) error {
 	return db.gormDB.Create(value).Error
 }
 
 func (db *DB) Save(value interface{}) error {
 	return db.gormDB.Save(value).Error
+}
+
+func (db *DB) SaveTx(values ...interface{}) (err error) {
+	err = db.gormDB.Transaction(func(tx *gorm.DB) (err error) {
+		for _, value := range values {
+			if err = tx.Save(value).Error; err != nil {
+				return
+			}
+		}
+
+		return nil
+	},
+	)
+
+	return
 }

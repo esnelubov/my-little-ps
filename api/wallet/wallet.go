@@ -26,13 +26,13 @@ type AddWalletRequest struct {
 	Currency string
 }
 
-func (r *AddWalletRequest) Validate() error {
-	if r.Name == "" || r.Country == "" || r.City == "" || r.Currency == "" {
+func (a *API) ValidateAddWallet(req *AddWalletRequest) error {
+	if req.Name == "" || req.Country == "" || req.City == "" || req.Currency == "" {
 		return errors.New("all fields should be filled")
 	}
 
-	if !constants.AllowedCurrencies.Has(r.Currency) {
-		return errors.New(fmt.Sprintf("allowed currencies: %v", constants.AllowedCurrencies))
+	if !constants.AllowedCurrencies.Has(req.Currency) {
+		return fmt.Errorf("allowed currencies: %v", constants.AllowedCurrencies)
 	}
 
 	return nil
@@ -43,7 +43,7 @@ type AddWalletResponse struct {
 }
 
 func (a *API) AddWallet(req *AddWalletRequest) (resp *AddWalletResponse, err error) {
-	if err = req.Validate(); err != nil {
+	if err = a.ValidateAddWallet(req); err != nil {
 		return nil, err
 	}
 
