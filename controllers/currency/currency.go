@@ -15,20 +15,39 @@ func NewController(db *database.DB) *Controller {
 	}
 }
 
-func (c *Controller) UpdateFromFloat(rates map[string]float64) error {
+func (c *Controller) UpdateFromFloat(rates map[string]float64) (err error) {
 	var (
-		record  models.Currency
-		records = make([]interface{}, len(rates))
+		record *models.Currency
 	)
 
 	for name, rate := range rates {
-		record = models.Currency{
-			Name:    name,
-			USDRate: int64(rate * 1000000),
+		record, err = c.GetOrInitRateRecord(name)
+		if err != nil {
+			return
 		}
 
-		records = append(records, record)
+		record.USDRate = int64(rate * 1000000)
+
+		if err = c.DB.Save(record); err != nil {
+			return
+		}
 	}
 
-	return c.DB.SaveTx(records...)
+	return nil
+}
+
+func (c *Controller) GetOrInitRateRecord(name string) (record *models.Currency, err error) {
+	record = &models.Currency{}
+
+	err = c.DB.Last(record, map[string]interface{}{"name = ?": name})
+
+	if err == c.DB.ErrRecordNotFound {
+		record = &models.Currency{
+			Name: name,
+		}
+
+		err = nil
+	}
+
+	return
 }

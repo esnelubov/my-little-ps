@@ -20,7 +20,7 @@ func NewController(db *database.DB) *Controller {
 
 // ExternalIn receive money from external sources
 func (c *Controller) ExternalIn(transactionId string, targetWalletID uint, amount int64, currency string) error {
-	newOp := models.InOperation{
+	newOp := &models.InOperation{
 		Model:          gorm.Model{},
 		OperationId:    utils.UUIDv4(),
 		TransactionId:  transactionId,
@@ -31,12 +31,12 @@ func (c *Controller) ExternalIn(transactionId string, targetWalletID uint, amoun
 		Status:         constants.OpStatusNew,
 	}
 
-	return c.DB.Create(&newOp)
+	return c.DB.Create(newOp)
 }
 
 // InternalIn receive money to wallet
 func (c *Controller) InternalIn(transactionId string, originWalletID uint, targetWalletID uint, amount int64, currency string) error {
-	newOp := models.InOperation{
+	newOp := &models.InOperation{
 		Model:          gorm.Model{},
 		OperationId:    utils.UUIDv4(),
 		TransactionId:  transactionId,
@@ -47,12 +47,12 @@ func (c *Controller) InternalIn(transactionId string, originWalletID uint, targe
 		Status:         constants.OpStatusNew,
 	}
 
-	return c.DB.Create(&newOp)
+	return c.DB.Create(newOp)
 }
 
 // InternalOut send money from wallet
 func (c *Controller) InternalOut(transactionId string, originWalletID uint, targetWalletID uint, amount int64, currency string) error {
-	newOp := models.OutOperation{
+	newOp := &models.OutOperation{
 		Model:          gorm.Model{},
 		OperationId:    utils.UUIDv4(),
 		TransactionId:  transactionId,
@@ -63,5 +63,5 @@ func (c *Controller) InternalOut(transactionId string, originWalletID uint, targ
 		Status:         constants.OpStatusNew,
 	}
 
-	return c.DB.Create(&newOp)
+	return c.DB.Create(newOp)
 }

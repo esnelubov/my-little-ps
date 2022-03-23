@@ -17,7 +17,7 @@ func NewController(db *database.DB) *Controller {
 }
 
 func (c *Controller) AddWallet(wallet *models.Wallet) error {
-	return c.DB.Create(&wallet)
+	return c.DB.Create(wallet)
 }
 
 func (c *Controller) HasWallet(id uint) (bool, error) {

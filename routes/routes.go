@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"my-little-ps/api"
 	"my-little-ps/api/currency"
+	"my-little-ps/api/report"
 	"my-little-ps/api/transaction"
 	"my-little-ps/api/wallet"
 )
@@ -81,6 +82,26 @@ func UpdateCurrencies(c *fiber.Ctx) (err error) {
 	}
 
 	resp, err = api.Currency.UpdateCurrencies(req)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(200).JSON(&ResponseData{Payload: resp})
+}
+
+func GetOperations(c *fiber.Ctx) (err error) {
+	var (
+		req = &report.GetOperationsRequest{
+			WalletId: c.Params("walletId"),
+			Offset:   c.Params("offset"),
+			Limit:    c.Params("limit"),
+			From:     c.Query("from"),
+			To:       c.Query("to"),
+		}
+		resp *report.GetOperationsResponse
+	)
+
+	resp, err = api.Report.GetOperations(req)
 	if err != nil {
 		return err
 	}

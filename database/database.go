@@ -15,7 +15,8 @@ import (
 )
 
 type DB struct {
-	gormDB *gorm.DB
+	gormDB            *gorm.DB
+	ErrRecordNotFound error
 }
 
 func New(config config.IConfig) *DB {
@@ -43,7 +44,8 @@ func New(config config.IConfig) *DB {
 	}
 
 	return &DB{
-		gormDB: db,
+		gormDB:            db,
+		ErrRecordNotFound: gorm.ErrRecordNotFound,
 	}
 }
 
@@ -93,14 +95,26 @@ func AutoMigrate(config config.IConfig) error {
 	return nil
 }
 
-func (db *DB) Has(table interface{}, criteria map[string]interface{}) (bool, error) {
+func (db *DB) createWhereQuery(criteria map[string]interface{}) *gorm.DB {
 	query := db.gormDB
 
 	for c, v := range criteria {
 		query.Where(c, v)
 	}
 
-	err := query.Take(&table).Error
+	return query
+}
+
+func (db *DB) Last(record interface{}, criteria map[string]interface{}) error {
+	query := db.createWhereQuery(criteria)
+
+	return query.Last(record).Error
+}
+
+func (db *DB) Has(record interface{}, criteria map[string]interface{}) (bool, error) {
+	query := db.createWhereQuery(criteria)
+
+	err := query.Take(record).Error
 
 	if err == nil {
 		return true, nil
@@ -119,19 +133,4 @@ func (db *DB) Create(value interface{}) error {
 
 func (db *DB) Save(value interface{}) error {
 	return db.gormDB.Save(value).Error
-}
-
-func (db *DB) SaveTx(values ...interface{}) (err error) {
-	err = db.gormDB.Transaction(func(tx *gorm.DB) (err error) {
-		for _, value := range values {
-			if err = tx.Save(value).Error; err != nil {
-				return
-			}
-		}
-
-		return nil
-	},
-	)
-
-	return
 }

@@ -30,6 +30,8 @@ func setUpRoutes(a *app.App) {
 	a.Post("/wallet", routes.AddWallet)
 	a.Post("/receive_amount", routes.ReceiveAmount)
 	a.Post("/transfer_amount", routes.TransferAmount)
+	a.Post("/update_currencies", routes.UpdateCurrencies)
+	a.Get("/operations/:walletId/:offset/:limit", routes.GetOperations)
 	//a.Put("/book", routes.Update)
 	//a.Delete("/book", routes.Delete)
 }
