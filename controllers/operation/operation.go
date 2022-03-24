@@ -6,6 +6,7 @@ import (
 	"my-little-ps/constants"
 	"my-little-ps/database"
 	"my-little-ps/models"
+	"time"
 )
 
 type Controller struct {
@@ -18,8 +19,8 @@ func NewController(db *database.DB) *Controller {
 	}
 }
 
-// ExternalIn receive money from external sources
-func (c *Controller) ExternalIn(transactionId string, targetWalletID uint, amount int64, currency string) error {
+// NewExternalIn receive money from external sources
+func (c *Controller) NewExternalIn(transactionId string, targetWalletID uint, amount int64, currency string) error {
 	newOp := &models.InOperation{
 		Model:          gorm.Model{},
 		OperationId:    utils.UUIDv4(),
@@ -34,8 +35,8 @@ func (c *Controller) ExternalIn(transactionId string, targetWalletID uint, amoun
 	return c.DB.Create(newOp)
 }
 
-// InternalIn receive money to wallet
-func (c *Controller) InternalIn(transactionId string, originWalletID uint, targetWalletID uint, amount int64, currency string) error {
+// NewInternalIn receive money to wallet
+func (c *Controller) NewInternalIn(transactionId string, originWalletID uint, targetWalletID uint, amount int64, currency string) error {
 	newOp := &models.InOperation{
 		Model:          gorm.Model{},
 		OperationId:    utils.UUIDv4(),
@@ -50,8 +51,8 @@ func (c *Controller) InternalIn(transactionId string, originWalletID uint, targe
 	return c.DB.Create(newOp)
 }
 
-// InternalOut send money from wallet
-func (c *Controller) InternalOut(transactionId string, originWalletID uint, targetWalletID uint, amount int64, currency string) error {
+// NewInternalOut send money from wallet
+func (c *Controller) NewInternalOut(transactionId string, originWalletID uint, targetWalletID uint, amount int64, currency string) error {
 	newOp := &models.OutOperation{
 		Model:          gorm.Model{},
 		OperationId:    utils.UUIDv4(),
@@ -64,4 +65,14 @@ func (c *Controller) InternalOut(transactionId string, originWalletID uint, targ
 	}
 
 	return c.DB.Create(newOp)
+}
+
+func (c *Controller) GetInOperations(walletId uint, from time.Time, to time.Time, offset int, limit int) (records []*models.InOperation, err error) {
+	err = c.DB.Find(&records, map[string]interface{}{"target_wallet_id = ?": walletId, "created_at >= ?": from, "created_at < ?": to, "offset": offset, "limit": limit})
+	return
+}
+
+func (c *Controller) GetOutOperations(walletId uint, from time.Time, to time.Time, offset int, limit int) (records []*models.OutOperation, err error) {
+	err = c.DB.Find(&records, map[string]interface{}{"origin_wallet_id = ?": walletId, "created_at >= ?": from, "created_at < ?": to, "offset": offset, "limit": limit})
+	return
 }

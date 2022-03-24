@@ -25,15 +25,14 @@ var (
 )
 
 func setUpRoutes(a *app.App) {
-	//a.Get("/allbooks", routes.AllBooks)
-	//a.Get("/book/:id", routes.GetBook)
 	a.Post("/wallet", routes.AddWallet)
 	a.Post("/receive_amount", routes.ReceiveAmount)
 	a.Post("/transfer_amount", routes.TransferAmount)
 	a.Post("/update_currencies", routes.UpdateCurrencies)
-	a.Get("/operations/:walletId/:offset/:limit", routes.GetOperations)
-	//a.Put("/book", routes.Update)
-	//a.Delete("/book", routes.Delete)
+	a.Get("/operations/:walletId", routes.GetOperations)
+	a.Get("/operations_file/:walletId", routes.GetOperationsCSV)
+	a.Get("/operations_total/:walletId", routes.GetOperationsTotal)
+	a.Get("/convert_amount/:amount/:from/:to", routes.ConvertAmount)
 }
 
 func main() {

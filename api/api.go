@@ -18,8 +18,8 @@ var (
 )
 
 func Setup(walletController *wc.Controller, operationController *oc.Controller, currencyController *cc.Controller) {
-	Wallet = wallet.New(walletController)
-	Transaction = transaction.New(walletController, operationController)
 	Currency = currency.New(currencyController)
-	Report = report.New(walletController, operationController)
+	Wallet = wallet.New(walletController, currencyController)
+	Transaction = transaction.New(walletController, operationController, currencyController)
+	Report = report.New(walletController, operationController, currencyController)
 }

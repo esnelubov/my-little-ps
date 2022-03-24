@@ -1,9 +1,8 @@
 package constants
 
-import "my-little-ps/helpers/datatypes/set_of_string"
-
-var (
-	AllowedCurrencies *set_of_string.Type
+const (
+	OpIn  = "in"
+	OpOut = "out"
 )
 
 const (
@@ -13,6 +12,14 @@ const (
 	OpStatusDecline    = "decline"
 )
 
+const (
+	USD = "USD"
+)
+
+const (
+	RateMultiplier = 1000000
+)
+
 func Setup() {
-	AllowedCurrencies = set_of_string.New("USD", "RUB")
+
 }

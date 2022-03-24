@@ -96,10 +96,28 @@ func AutoMigrate(config config.IConfig) error {
 }
 
 func (db *DB) createWhereQuery(criteria map[string]interface{}) *gorm.DB {
+	var (
+		ok     bool
+		offset interface{}
+		limit  interface{}
+	)
+
 	query := db.gormDB
 
+	offset, ok = criteria["offset"]
+	if ok {
+		query = query.Offset(offset.(int))
+		delete(criteria, "offset")
+	}
+
+	limit, ok = criteria["limit"]
+	if ok {
+		query = query.Limit(limit.(int))
+		delete(criteria, "limit")
+	}
+
 	for c, v := range criteria {
-		query.Where(c, v)
+		query = query.Where(c, v)
 	}
 
 	return query
@@ -125,6 +143,16 @@ func (db *DB) Has(record interface{}, criteria map[string]interface{}) (bool, er
 	}
 
 	return false, err
+}
+
+func (db *DB) Find(records interface{}, criteria map[string]interface{}) error {
+	query := db.createWhereQuery(criteria)
+
+	return query.Find(records).Error
+}
+
+func (db *DB) Raw(result interface{}, sql string, params ...interface{}) error {
+	return db.gormDB.Raw(sql, params...).Scan(result).Error
 }
 
 func (db *DB) Create(value interface{}) error {
