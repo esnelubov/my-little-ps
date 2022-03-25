@@ -2,17 +2,20 @@ package currency
 
 import (
 	"fmt"
+	"my-little-ps/cache_maps/currency"
 	cc "my-little-ps/controllers/currency"
 	"strconv"
 )
 
 type API struct {
 	currencyController *cc.Controller
+	currencyCache      *currency.CacheMap
 }
 
-func New(currencyController *cc.Controller) *API {
+func New(currencyController *cc.Controller, currencyCache *currency.CacheMap) *API {
 	return &API{
 		currencyController: currencyController,
+		currencyCache:      currencyCache,
 	}
 }
 
@@ -58,8 +61,7 @@ type ConvertAmountResponse struct {
 
 func (a *API) ValidateConvertAmount(req *ConvertAmountRequest) (resp *ConvertAmountDecodedRequest, err error) {
 	var (
-		amount      int64
-		hasCurrency bool
+		amount int64
 	)
 
 	resp = &ConvertAmountDecodedRequest{
@@ -74,21 +76,11 @@ func (a *API) ValidateConvertAmount(req *ConvertAmountRequest) (resp *ConvertAmo
 
 	resp.Amount = amount
 
-	hasCurrency, err = a.currencyController.HasCurrency(req.From)
-	if err != nil {
-		return
-	}
-
-	if !hasCurrency {
+	if !a.currencyCache.HasCurrency(req.From) {
 		return nil, fmt.Errorf("currency is not allowed: %s", req.From)
 	}
 
-	hasCurrency, err = a.currencyController.HasCurrency(req.To)
-	if err != nil {
-		return
-	}
-
-	if !hasCurrency {
+	if !a.currencyCache.HasCurrency(req.To) {
 		return nil, fmt.Errorf("currency is not allowed: %s", req.To)
 	}
 
@@ -107,7 +99,7 @@ func (a *API) ConvertAmount(req *ConvertAmountRequest) (resp *ConvertAmountRespo
 
 	resp = &ConvertAmountResponse{}
 
-	resp.Amount, err = a.currencyController.Convert(reqDec.From, reqDec.To, reqDec.Amount)
+	resp.Amount, err = a.currencyCache.Convert(reqDec.From, reqDec.To, reqDec.Amount)
 	if err != nil {
 		return
 	}

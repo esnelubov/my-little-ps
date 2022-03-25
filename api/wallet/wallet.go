@@ -4,20 +4,20 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
-	cc "my-little-ps/controllers/currency"
+	"my-little-ps/cache_maps/currency"
 	wc "my-little-ps/controllers/wallet"
 	"my-little-ps/models"
 )
 
 type API struct {
-	walletController   *wc.Controller
-	currencyController *cc.Controller
+	walletController *wc.Controller
+	currencyCache    *currency.CacheMap
 }
 
-func New(walletController *wc.Controller, currencyController *cc.Controller) *API {
+func New(walletController *wc.Controller, currencyCache *currency.CacheMap) *API {
 	return &API{
-		walletController:   walletController,
-		currencyController: currencyController,
+		walletController: walletController,
+		currencyCache:    currencyCache,
 	}
 }
 
@@ -29,20 +29,11 @@ type AddWalletRequest struct {
 }
 
 func (a *API) ValidateAddWallet(req *AddWalletRequest) (err error) {
-	var (
-		hasCurrency bool
-	)
-
 	if req.Name == "" || req.Country == "" || req.City == "" || req.Currency == "" {
 		return errors.New("all fields should be filled")
 	}
 
-	hasCurrency, err = a.currencyController.HasCurrency(req.Currency)
-	if err != nil {
-		return err
-	}
-
-	if !hasCurrency {
+	if !a.currencyCache.HasCurrency(req.Currency) {
 		return fmt.Errorf("currency is not allowed")
 	}
 

@@ -7,21 +7,27 @@ import (
 	"log"
 	"my-little-ps/api"
 	"my-little-ps/app"
+	"my-little-ps/cache_maps/currency"
 	"my-little-ps/config"
 	"my-little-ps/constants"
 	"my-little-ps/controllers"
 	"my-little-ps/database"
+	"my-little-ps/gateway_tasks"
 	"my-little-ps/logger"
 	"my-little-ps/routes"
+	"my-little-ps/scheduler"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
 var (
-	Conf config.IConfig
-	Log  *logger.Log
-	DB   *database.DB
+	Conf            config.IConfig
+	Log             *logger.Log
+	DB              *database.DB
+	Scheduler       *scheduler.Scheduler
+	CurrenciesCache *currency.CacheMap
+	Tasks           *gateway_tasks.Tasks
 )
 
 func setUpRoutes(a *app.App) {
@@ -35,13 +41,30 @@ func setUpRoutes(a *app.App) {
 	a.Get("/convert_amount/:amount/:from/:to", routes.ConvertAmount)
 }
 
-func main() {
+func setUpScheduler() {
+	Scheduler.AddTask("@every 1m", Tasks.UpdateCurrencyCache)
+
+	//preRunTasks
+	Tasks.UpdateCurrencyCache()
+}
+
+func setUpDependencies() {
 	Conf = config.New("settings")
 	Log = logger.New()
 	DB = database.New(Conf)
+	Scheduler = scheduler.New(Conf)
 	constants.Setup()
 	controllers.Setup(DB)
-	api.Setup(controllers.Wallet, controllers.Operation, controllers.Currency)
+	CurrenciesCache = currency.New(controllers.Currency)
+	Tasks = gateway_tasks.New(CurrenciesCache)
+	api.Setup(controllers.Wallet, controllers.Operation, controllers.Currency, CurrenciesCache)
+}
+
+func main() {
+	setUpDependencies()
+	setUpScheduler()
+
+	Scheduler.Start()
 
 	shutdownTimeoutSec := Conf.GetDurationSec("shutdownTimeoutSec")
 
@@ -74,6 +97,7 @@ func main() {
 
 	fmt.Println("Shutting down...")
 	_ = a.GracefulShutdown(shutdownTimeoutSec)
+	_ = Scheduler.GracefulShutdown(shutdownTimeoutSec)
 	_ = Log.Sync()
 }
 

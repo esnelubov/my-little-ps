@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2/utils"
+	"my-little-ps/cache_maps/currency"
 	"my-little-ps/constants"
-	cc "my-little-ps/controllers/currency"
 	oc "my-little-ps/controllers/operation"
 	wc "my-little-ps/controllers/wallet"
 	"my-little-ps/models"
@@ -18,14 +18,14 @@ import (
 type API struct {
 	walletController    *wc.Controller
 	operationController *oc.Controller
-	currencyController  *cc.Controller
+	currencyCache       *currency.CacheMap
 }
 
-func New(walletController *wc.Controller, operationController *oc.Controller, currencyController *cc.Controller) *API {
+func New(walletController *wc.Controller, operationController *oc.Controller, currencyCache *currency.CacheMap) *API {
 	return &API{
 		walletController:    walletController,
 		operationController: operationController,
-		currencyController:  currencyController,
+		currencyCache:       currencyCache,
 	}
 }
 
@@ -249,8 +249,7 @@ type GetOperationsTotalResponse struct {
 
 func (a *API) ParseGetOperationsTotal(req *GetOperationsTotalRequest) (resp *GetOperationsTotalDecodedRequest, err error) {
 	var (
-		walletId    uint64
-		hasCurrency bool
+		walletId uint64
 	)
 
 	if req.WalletId == "" {
@@ -275,12 +274,7 @@ func (a *API) ParseGetOperationsTotal(req *GetOperationsTotalRequest) (resp *Get
 		req.Currency = constants.USD
 	}
 
-	hasCurrency, err = a.currencyController.HasCurrency(req.Currency)
-	if err != nil {
-		return
-	}
-
-	if !hasCurrency {
+	if !a.currencyCache.HasCurrency(req.Currency) {
 		return nil, errors.New("currency is not allowed")
 	}
 
@@ -332,7 +326,7 @@ func (a *API) GetOperationsTotal(req *GetOperationsTotalRequest) (resp *GetOpera
 		}
 
 		for _, op := range inOps {
-			amount, err = a.currencyController.Convert(op.Currency, resp.Currency, op.Amount)
+			amount, err = a.currencyCache.Convert(op.Currency, resp.Currency, op.Amount)
 			if err != nil {
 				return
 			}
@@ -356,7 +350,7 @@ func (a *API) GetOperationsTotal(req *GetOperationsTotalRequest) (resp *GetOpera
 		}
 
 		for _, op := range outOps {
-			amount, err = a.currencyController.Convert(op.Currency, resp.Currency, op.Amount)
+			amount, err = a.currencyCache.Convert(op.Currency, resp.Currency, op.Amount)
 			if err != nil {
 				return
 			}

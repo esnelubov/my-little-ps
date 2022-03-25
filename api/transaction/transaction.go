@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2/utils"
-	cc "my-little-ps/controllers/currency"
+	"my-little-ps/cache_maps/currency"
 	oc "my-little-ps/controllers/operation"
 	wc "my-little-ps/controllers/wallet"
 )
@@ -12,14 +12,14 @@ import (
 type API struct {
 	walletController    *wc.Controller
 	operationController *oc.Controller
-	currencyController  *cc.Controller
+	currencyCache       *currency.CacheMap
 }
 
-func New(walletController *wc.Controller, operationController *oc.Controller, currencyController *cc.Controller) *API {
+func New(walletController *wc.Controller, operationController *oc.Controller, currencyCache *currency.CacheMap) *API {
 	return &API{
 		walletController:    walletController,
 		operationController: operationController,
-		currencyController:  currencyController,
+		currencyCache:       currencyCache,
 	}
 }
 
@@ -34,10 +34,6 @@ type ReceiveAmountResponse struct {
 }
 
 func (a *API) ValidateReceiveAmount(req *ReceiveAmountRequest) (err error) {
-	var (
-		hasCurrency bool
-	)
-
 	if req.Amount <= 0 || req.Currency == "" {
 		return errors.New("all fields should be filled")
 	}
@@ -47,12 +43,7 @@ func (a *API) ValidateReceiveAmount(req *ReceiveAmountRequest) (err error) {
 		return err
 	}
 
-	hasCurrency, err = a.currencyController.HasCurrency(req.Currency)
-	if err != nil {
-		return err
-	}
-
-	if !hasCurrency {
+	if !a.currencyCache.HasCurrency(req.Currency) {
 		return fmt.Errorf("currency is not allowed")
 	}
 
@@ -88,10 +79,6 @@ type TransferAmountResponse struct {
 }
 
 func (a *API) ValidateTransferAmount(req *TransferAmountRequest) error {
-	var (
-		hasCurrency bool
-	)
-
 	if req.Amount <= 0 || req.Currency == "" {
 		return errors.New("all fields should be filled")
 	}
@@ -101,12 +88,7 @@ func (a *API) ValidateTransferAmount(req *TransferAmountRequest) error {
 		return err
 	}
 
-	hasCurrency, err = a.currencyController.HasCurrency(req.Currency)
-	if err != nil {
-		return err
-	}
-
-	if !hasCurrency {
+	if !a.currencyCache.HasCurrency(req.Currency) {
 		return fmt.Errorf("currency is not allowed")
 	}
 

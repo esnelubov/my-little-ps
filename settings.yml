@@ -2,6 +2,8 @@ ip: "127.0.0.1:4567"
 autoMigrate: true
 dsn: "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
 schemaName: "my_little_ps"
+location: "UTC"
+maxPoolTasks: 32
 prefork: false
 idleTimeoutSec: 15
 readTimeoutSec: 15

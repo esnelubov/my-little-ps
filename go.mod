@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/gofiber/fiber/v2 v2.23.0
 	github.com/golang-migrate/migrate/v4 v4.15.1
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/viper v1.10.1
 	go.uber.org/zap v1.21.0
 	gorm.io/driver/postgres v1.3.1

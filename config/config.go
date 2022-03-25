@@ -10,6 +10,7 @@ type IConfig interface {
 	GetString(key string) string
 	GetBool(key string) bool
 	GetDurationSec(key string) time.Duration
+	GetInt64(key string) int64
 }
 
 type Config struct {
@@ -51,4 +52,8 @@ func (c *Config) GetBool(key string) bool {
 
 func (c *Config) GetDurationSec(key string) time.Duration {
 	return time.Duration(c.vprConfig.GetInt(key)) * time.Second
+}
+
+func (c *Config) GetInt64(key string) int64 {
+	return c.vprConfig.GetInt64(key)
 }
