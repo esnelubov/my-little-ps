@@ -3,24 +3,31 @@ package wallet
 import (
 	"fmt"
 	"my-little-ps/database"
+	"my-little-ps/logger"
 	"my-little-ps/models"
 )
 
 type Controller struct {
-	DB *database.DB
+	logger *logger.Log
+	DB     *database.DB
 }
 
-func NewController(db *database.DB) *Controller {
+func NewController(logger *logger.Log, db *database.DB) *Controller {
 	return &Controller{
-		DB: db,
+		logger: logger,
+		DB:     db,
 	}
 }
 
 func (c *Controller) AddWallet(wallet *models.Wallet) error {
+	c.logger.Debugf("Adding wallet %+v", wallet)
+
 	return c.DB.Create(wallet)
 }
 
 func (c *Controller) HasWallet(id uint) (bool, error) {
+	c.logger.Debugf("Checking if wallet %d exists", id)
+
 	return c.DB.Has(&models.Wallet{}, map[string]interface{}{"id = ?": id})
 }
 

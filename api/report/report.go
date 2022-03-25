@@ -8,6 +8,7 @@ import (
 	"my-little-ps/constants"
 	oc "my-little-ps/controllers/operation"
 	wc "my-little-ps/controllers/wallet"
+	"my-little-ps/logger"
 	"my-little-ps/models"
 	"os"
 	"sort"
@@ -16,13 +17,15 @@ import (
 )
 
 type API struct {
+	logger              *logger.Log
 	walletController    *wc.Controller
 	operationController *oc.Controller
 	currencyCache       *currency.CacheMap
 }
 
-func New(walletController *wc.Controller, operationController *oc.Controller, currencyCache *currency.CacheMap) *API {
+func New(logger *logger.Log, walletController *wc.Controller, operationController *oc.Controller, currencyCache *currency.CacheMap) *API {
 	return &API{
+		logger:              logger,
 		walletController:    walletController,
 		operationController: operationController,
 		currencyCache:       currencyCache,
@@ -127,6 +130,8 @@ func parseRFC3339Time(val string, def time.Time) (time.Time, error) {
 }
 
 func (a *API) GetOperations(req *GetOperationsRequest) (resp *GetOperationsResponse, err error) {
+	a.logger.Debugf("Received the GetOperations request: %+v", req)
+
 	var (
 		reqDec *GetOperationsDecodedRequest
 		ops    []*Operation
@@ -149,10 +154,14 @@ func (a *API) GetOperations(req *GetOperationsRequest) (resp *GetOperationsRespo
 		To:         reqDec.To.Format(time.RFC3339),
 	}
 
+	a.logger.Debugf("Replying to the GetOperations request: %+v, with %d operations", req, len(resp.Operations))
+
 	return
 }
 
 func (a *API) GetOperationsCSV(req *GetOperationsRequest) (filename string, err error) {
+	a.logger.Debugf("Received the GetOperationsCSV request: %+v", req)
+
 	var (
 		reqDec   *GetOperationsDecodedRequest
 		opsChunk []*Operation
@@ -192,6 +201,8 @@ func (a *API) GetOperationsCSV(req *GetOperationsRequest) (filename string, err 
 
 		reqDec.Offset += reqDec.Limit
 	}
+
+	a.logger.Debugf("Prepared CSV report %s for the GetOperationsCSV request: %+v", f.Name(), req)
 
 	return f.Name(), nil
 }
@@ -294,6 +305,8 @@ func (a *API) ParseGetOperationsTotal(req *GetOperationsTotalRequest) (resp *Get
 }
 
 func (a *API) GetOperationsTotal(req *GetOperationsTotalRequest) (resp *GetOperationsTotalResponse, err error) {
+	a.logger.Debugf("Received the GetOperationsTotal request: %+v", req)
+
 	var (
 		reqDec *GetOperationsTotalDecodedRequest
 		inOps  []*models.InOperation
@@ -360,6 +373,8 @@ func (a *API) GetOperationsTotal(req *GetOperationsTotalRequest) (resp *GetOpera
 
 		offset += limit
 	}
+
+	a.logger.Debugf("Replying to the GetOperationsTotal request: %+v, with: %+v", req, resp)
 
 	return
 }

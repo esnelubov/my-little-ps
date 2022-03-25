@@ -5,6 +5,7 @@ import (
 	"my-little-ps/controllers/operation"
 	"my-little-ps/controllers/wallet"
 	"my-little-ps/database"
+	"my-little-ps/logger"
 )
 
 var (
@@ -13,8 +14,8 @@ var (
 	Currency  *currency.Controller
 )
 
-func Setup(DB *database.DB) {
-	Operation = operation.NewController(DB)
-	Wallet = wallet.NewController(DB)
-	Currency = currency.NewController(DB)
+func Setup(logger *logger.Log, db *database.DB) {
+	Operation = operation.NewController(logger, db)
+	Wallet = wallet.NewController(logger, db)
+	Currency = currency.NewController(logger, db)
 }

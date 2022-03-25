@@ -1,5 +1,9 @@
 package gateway_tasks
 
 func (t *Tasks) UpdateCurrencyCache() {
-	_ = t.CurrenciesCache.UpdateCurrencies()
+	err := t.CurrenciesCache.UpdateCurrencies()
+
+	if err != nil {
+		t.logger.Errorf("Can't update currencies from db: %s", err.Error())
+	}
 }

@@ -7,16 +7,19 @@ import (
 	"my-little-ps/cache_maps/currency"
 	oc "my-little-ps/controllers/operation"
 	wc "my-little-ps/controllers/wallet"
+	"my-little-ps/logger"
 )
 
 type API struct {
+	logger              *logger.Log
 	walletController    *wc.Controller
 	operationController *oc.Controller
 	currencyCache       *currency.CacheMap
 }
 
-func New(walletController *wc.Controller, operationController *oc.Controller, currencyCache *currency.CacheMap) *API {
+func New(logger *logger.Log, walletController *wc.Controller, operationController *oc.Controller, currencyCache *currency.CacheMap) *API {
 	return &API{
+		logger:              logger,
 		walletController:    walletController,
 		operationController: operationController,
 		currencyCache:       currencyCache,
@@ -51,6 +54,8 @@ func (a *API) ValidateReceiveAmount(req *ReceiveAmountRequest) (err error) {
 }
 
 func (a *API) ReceiveAmount(req *ReceiveAmountRequest) (resp *ReceiveAmountResponse, err error) {
+	a.logger.Debugf("Received the ReceiveAmount request: %+v", req)
+
 	if err = a.ValidateReceiveAmount(req); err != nil {
 		return nil, err
 	}
@@ -62,9 +67,13 @@ func (a *API) ReceiveAmount(req *ReceiveAmountRequest) (resp *ReceiveAmountRespo
 		return nil, err
 	}
 
-	return &ReceiveAmountResponse{
+	resp = &ReceiveAmountResponse{
 		TransactionId: transactionId,
-	}, nil
+	}
+
+	a.logger.Debugf("Replying to the ReceiveAmount request: %+v, with: %+v", req, resp)
+
+	return
 }
 
 type TransferAmountRequest struct {
@@ -96,6 +105,8 @@ func (a *API) ValidateTransferAmount(req *TransferAmountRequest) error {
 }
 
 func (a *API) TransferAmount(req *TransferAmountRequest) (resp *TransferAmountResponse, err error) {
+	a.logger.Debugf("Received the TransferAmount request: %+v", req)
+
 	if err = a.ValidateTransferAmount(req); err != nil {
 		return nil, err
 	}
@@ -107,7 +118,11 @@ func (a *API) TransferAmount(req *TransferAmountRequest) (resp *TransferAmountRe
 		return nil, err
 	}
 
-	return &TransferAmountResponse{
+	resp = &TransferAmountResponse{
 		TransactionId: transactionId,
-	}, nil
+	}
+
+	a.logger.Debugf("Replying to the TransferAmount request: %+v, with: %+v", req, resp)
+
+	return
 }

@@ -6,16 +6,19 @@ import (
 	"gorm.io/gorm"
 	"my-little-ps/cache_maps/currency"
 	wc "my-little-ps/controllers/wallet"
+	"my-little-ps/logger"
 	"my-little-ps/models"
 )
 
 type API struct {
+	logger           *logger.Log
 	walletController *wc.Controller
 	currencyCache    *currency.CacheMap
 }
 
-func New(walletController *wc.Controller, currencyCache *currency.CacheMap) *API {
+func New(logger *logger.Log, walletController *wc.Controller, currencyCache *currency.CacheMap) *API {
 	return &API{
+		logger:           logger,
 		walletController: walletController,
 		currencyCache:    currencyCache,
 	}
@@ -45,6 +48,8 @@ type AddWalletResponse struct {
 }
 
 func (a *API) AddWallet(req *AddWalletRequest) (resp *AddWalletResponse, err error) {
+	a.logger.Debugf("Received the AddWallet request: %+v", req)
+
 	if err = a.ValidateAddWallet(req); err != nil {
 		return nil, err
 	}
@@ -63,7 +68,11 @@ func (a *API) AddWallet(req *AddWalletRequest) (resp *AddWalletResponse, err err
 		return nil, err
 	}
 
-	return &AddWalletResponse{
+	resp = &AddWalletResponse{
 		WalletID: newWallet.ID,
-	}, nil
+	}
+
+	a.logger.Debugf("Replying to the AddWallet request: %+v, with: %+v", req, resp)
+
+	return
 }

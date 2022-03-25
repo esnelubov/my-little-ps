@@ -31,33 +31,37 @@ var (
 )
 
 func setUpRoutes(a *app.App) {
+	fmt.Println("Setting up routes")
+
 	a.Post("/wallet", routes.AddWallet)
 	a.Post("/receive_amount", routes.ReceiveAmount)
 	a.Post("/transfer_amount", routes.TransferAmount)
 	a.Post("/update_currencies", routes.UpdateCurrencies)
 	a.Get("/operations/:walletId", routes.GetOperations)
-	a.Get("/operations_file/:walletId", routes.GetOperationsCSV)
-	a.Get("/operations_total/:walletId", routes.GetOperationsTotal)
+	a.Get("/operations/file/:walletId", routes.GetOperationsCSV)
+	a.Get("/operations/total/:walletId", routes.GetOperationsTotal)
 	a.Get("/convert_amount/:amount/:from/:to", routes.ConvertAmount)
 }
 
 func setUpScheduler() {
-	Scheduler.AddTask("@every 1m", Tasks.UpdateCurrencyCache)
+	fmt.Println("Setting up the task scheduler")
 
-	//preRunTasks
+	Scheduler.AddTask("@every 5m", Tasks.UpdateCurrencyCache)
+
+	fmt.Println("Pre running some tasks")
 	Tasks.UpdateCurrencyCache()
 }
 
 func setUpDependencies() {
 	Conf = config.New("settings")
-	Log = logger.New()
+	Log = logger.New(Conf)
 	DB = database.New(Conf)
-	Scheduler = scheduler.New(Conf)
+	Scheduler = scheduler.New(Log, Conf)
 	constants.Setup()
-	controllers.Setup(DB)
-	CurrenciesCache = currency.New(controllers.Currency)
-	Tasks = gateway_tasks.New(CurrenciesCache)
-	api.Setup(controllers.Wallet, controllers.Operation, controllers.Currency, CurrenciesCache)
+	controllers.Setup(Log, DB)
+	CurrenciesCache = currency.New(Log, controllers.Currency)
+	Tasks = gateway_tasks.New(Log, CurrenciesCache)
+	api.Setup(Log, controllers.Wallet, controllers.Operation, controllers.Currency, CurrenciesCache)
 }
 
 func main() {
@@ -95,7 +99,7 @@ func main() {
 
 	_ = <-c // This blocks the main thread until an interrupt is received
 
-	fmt.Println("Shutting down...")
+	fmt.Printf("Shutting down in %v...\n", shutdownTimeoutSec)
 	_ = a.GracefulShutdown(shutdownTimeoutSec)
 	_ = Scheduler.GracefulShutdown(shutdownTimeoutSec)
 	_ = Log.Sync()

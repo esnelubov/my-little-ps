@@ -1,4 +1,5 @@
 ip: "127.0.0.1:4567"
+env: "dev"
 autoMigrate: true
 dsn: "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
 schemaName: "my_little_ps"

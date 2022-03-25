@@ -1,19 +1,23 @@
 package currency
 
 import (
+	"errors"
 	"fmt"
 	"my-little-ps/cache_maps/currency"
 	cc "my-little-ps/controllers/currency"
+	"my-little-ps/logger"
 	"strconv"
 )
 
 type API struct {
+	logger             *logger.Log
 	currencyController *cc.Controller
 	currencyCache      *currency.CacheMap
 }
 
-func New(currencyController *cc.Controller, currencyCache *currency.CacheMap) *API {
+func New(logger *logger.Log, currencyController *cc.Controller, currencyCache *currency.CacheMap) *API {
 	return &API{
+		logger:             logger,
 		currencyController: currencyController,
 		currencyCache:      currencyCache,
 	}
@@ -27,10 +31,16 @@ type UpdateCurrenciesResponse struct {
 }
 
 func (a *API) ValidateUpdateCurrencies(req *UpdateCurrenciesRequest) error {
+	if len(req.Rates) == 0 {
+		return errors.New("rates field must be set")
+	}
+
 	return nil
 }
 
 func (a *API) UpdateCurrencies(req *UpdateCurrenciesRequest) (resp *UpdateCurrenciesResponse, err error) {
+	a.logger.Debugf("Received the UpdateCurrencies request: %+v", req)
+
 	if err = a.ValidateUpdateCurrencies(req); err != nil {
 		return nil, err
 	}
@@ -40,7 +50,11 @@ func (a *API) UpdateCurrencies(req *UpdateCurrenciesRequest) (resp *UpdateCurren
 		return nil, err
 	}
 
-	return &UpdateCurrenciesResponse{}, nil
+	resp = &UpdateCurrenciesResponse{}
+
+	a.logger.Debugf("Replying to the UpdateCurrencies request: %+v, with: %+v", req, resp)
+
+	return
 }
 
 type ConvertAmountRequest struct {
@@ -56,7 +70,8 @@ type ConvertAmountDecodedRequest struct {
 }
 
 type ConvertAmountResponse struct {
-	Amount int64
+	Amount   int64
+	Currency string
 }
 
 func (a *API) ValidateConvertAmount(req *ConvertAmountRequest) (resp *ConvertAmountDecodedRequest, err error) {
@@ -88,6 +103,8 @@ func (a *API) ValidateConvertAmount(req *ConvertAmountRequest) (resp *ConvertAmo
 }
 
 func (a *API) ConvertAmount(req *ConvertAmountRequest) (resp *ConvertAmountResponse, err error) {
+	a.logger.Debugf("Received the ConvertAmount request: %+v", req)
+
 	var (
 		reqDec *ConvertAmountDecodedRequest
 	)
@@ -97,12 +114,16 @@ func (a *API) ConvertAmount(req *ConvertAmountRequest) (resp *ConvertAmountRespo
 		return
 	}
 
-	resp = &ConvertAmountResponse{}
+	resp = &ConvertAmountResponse{
+		Currency: reqDec.To,
+	}
 
 	resp.Amount, err = a.currencyCache.Convert(reqDec.From, reqDec.To, reqDec.Amount)
 	if err != nil {
 		return
 	}
+
+	a.logger.Debugf("Replying to the ConvertAmount request: %+v, with: %+v", req, resp)
 
 	return
 }

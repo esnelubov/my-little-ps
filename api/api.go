@@ -9,6 +9,7 @@ import (
 	cc "my-little-ps/controllers/currency"
 	oc "my-little-ps/controllers/operation"
 	wc "my-little-ps/controllers/wallet"
+	"my-little-ps/logger"
 )
 
 var (
@@ -18,9 +19,9 @@ var (
 	Report      *report.API
 )
 
-func Setup(walletController *wc.Controller, operationController *oc.Controller, currencyController *cc.Controller, currencyCache *ch.CacheMap) {
-	Currency = currency.New(currencyController, currencyCache)
-	Wallet = wallet.New(walletController, currencyCache)
-	Transaction = transaction.New(walletController, operationController, currencyCache)
-	Report = report.New(walletController, operationController, currencyCache)
+func Setup(logger *logger.Log, walletController *wc.Controller, operationController *oc.Controller, currencyController *cc.Controller, currencyCache *ch.CacheMap) {
+	Currency = currency.New(logger, currencyController, currencyCache)
+	Wallet = wallet.New(logger, walletController, currencyCache)
+	Transaction = transaction.New(logger, walletController, operationController, currencyCache)
+	Report = report.New(logger, walletController, operationController, currencyCache)
 }
