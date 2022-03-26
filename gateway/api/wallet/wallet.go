@@ -61,6 +61,7 @@ func (a *API) AddWallet(req *AddWalletRequest) (resp *AddWalletResponse, err err
 		City:     req.City,
 		Currency: req.Currency,
 		Balance:  0,
+		Worker:   1,
 	}
 
 	err = a.walletController.AddWallet(&newWallet)

@@ -4,9 +4,11 @@ autoMigrate: true
 dsn: "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
 schemaName: "my_little_ps"
 location: "UTC"
-maxPoolTasks: 32
 prefork: false
 idleTimeoutSec: 15
 readTimeoutSec: 15
 writeTimeoutSec: 15
 shutdownTimeoutSec: 60
+maxPoolTasks: 32
+operationProcessorLimit: 1000
+operationProcessorDelay: "1s"

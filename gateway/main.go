@@ -7,15 +7,14 @@ import (
 	"log"
 	"my-little-ps/common/cache_maps/currency"
 	"my-little-ps/common/config"
-	"my-little-ps/common/constants"
 	"my-little-ps/common/controllers"
 	"my-little-ps/common/database"
 	"my-little-ps/common/logger"
 	"my-little-ps/common/scheduler"
+	"my-little-ps/common/tasks"
 	"my-little-ps/gateway/api"
 	"my-little-ps/gateway/app"
 	"my-little-ps/gateway/routes"
-	"my-little-ps/gateway/tasks"
 	"os"
 	"os/signal"
 	"syscall"
@@ -57,7 +56,6 @@ func setUpDependencies() {
 	Log = logger.New(Conf)
 	DB = database.New(Conf)
 	Scheduler = scheduler.New(Log, Conf)
-	constants.Setup()
 	controllers.Setup(Log, DB)
 	CurrenciesCache = currency.New(Log, controllers.Currency)
 	Tasks = tasks.New(Log, CurrenciesCache)
@@ -65,6 +63,8 @@ func setUpDependencies() {
 }
 
 func main() {
+	fmt.Println("Starting the gateway...")
+
 	setUpDependencies()
 	setUpScheduler()
 

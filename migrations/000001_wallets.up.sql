@@ -9,5 +9,8 @@ CREATE TABLE IF NOT EXISTS wallets
     city text COLLATE pg_catalog."default" NOT NULL,
     currency text COLLATE pg_catalog."default" NOT NULL,
     balance bigint NOT NULL DEFAULT 0,
+    worker integer NOT NULL DEFAULT 0,
     CONSTRAINT wallets_pkey PRIMARY KEY (id)
 )
+
+CREATE INDEX mlp_wallets_worker ON wallets (worker);

@@ -19,7 +19,3 @@ const (
 const (
 	RateMultiplier = 1000000
 )
-
-func Setup() {
-
-}

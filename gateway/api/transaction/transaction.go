@@ -41,7 +41,7 @@ func (a *API) ValidateReceiveAmount(req *ReceiveAmountRequest) (err error) {
 		return errors.New("all fields should be filled")
 	}
 
-	err = a.walletController.CheckWallets(req.WalletId)
+	err = a.walletController.WalletsMustExist(req.WalletId)
 	if err != nil {
 		return err
 	}
@@ -92,7 +92,7 @@ func (a *API) ValidateTransferAmount(req *TransferAmountRequest) error {
 		return errors.New("all fields should be filled")
 	}
 
-	err := a.walletController.CheckWallets(req.OriginWalletId, req.TargetWalletId)
+	err := a.walletController.WalletsMustExist(req.OriginWalletId, req.TargetWalletId)
 	if err != nil {
 		return err
 	}

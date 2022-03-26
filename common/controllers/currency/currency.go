@@ -8,14 +8,23 @@ import (
 )
 
 type Controller struct {
-	logger *logger.Log
-	DB     *database.DB
+	logger          *logger.Log
+	DB              *database.DB
+	withTransaction bool
 }
 
 func NewController(logger *logger.Log, db *database.DB) *Controller {
 	return &Controller{
 		logger: logger,
 		DB:     db,
+	}
+}
+
+func (c *Controller) WithTransaction(db *database.DB) *Controller {
+	return &Controller{
+		logger:          c.logger,
+		DB:              db,
+		withTransaction: true,
 	}
 }
 
@@ -45,7 +54,7 @@ func (c *Controller) UpdateFromFloat(rates map[string]float64) (err error) {
 func (c *Controller) GetOrInitRateRecord(name string) (record *models.Currency, err error) {
 	record = &models.Currency{}
 
-	err = c.DB.Last(record, map[string]interface{}{"name = ?": name})
+	err = c.DB.Last(record, map[string]interface{}{"name = ?": name}, c.withTransaction)
 
 	if err == c.DB.ErrRecordNotFound {
 		record = &models.Currency{
@@ -61,6 +70,6 @@ func (c *Controller) GetOrInitRateRecord(name string) (record *models.Currency, 
 func (c *Controller) GetAllRecords() (records []*models.Currency, err error) {
 	c.logger.Debug("Getting all rates from the currencies table")
 
-	err = c.DB.Find(&records, map[string]interface{}{})
+	err = c.DB.Find(&records, map[string]interface{}{}, c.withTransaction)
 	return
 }

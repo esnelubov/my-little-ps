@@ -10,6 +10,7 @@ type IConfig interface {
 	GetString(key string) string
 	GetBool(key string) bool
 	GetDurationSec(key string) time.Duration
+	GetInt(key string) int
 	GetInt64(key string) int64
 }
 
@@ -52,6 +53,10 @@ func (c *Config) GetBool(key string) bool {
 
 func (c *Config) GetDurationSec(key string) time.Duration {
 	return time.Duration(c.vprConfig.GetInt(key)) * time.Second
+}
+
+func (c *Config) GetInt(key string) int {
+	return c.vprConfig.GetInt(key)
 }
 
 func (c *Config) GetInt64(key string) int64 {

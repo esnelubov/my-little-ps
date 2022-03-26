@@ -83,7 +83,7 @@ func (a *API) ParseGetOperations(req *GetOperationsRequest) (resp *GetOperations
 		WalletId: uint(walletId),
 	}
 
-	err = a.walletController.CheckWallets(resp.WalletId)
+	err = a.walletController.WalletsMustExist(resp.WalletId)
 	if err != nil {
 		return
 	}
@@ -276,7 +276,7 @@ func (a *API) ParseGetOperationsTotal(req *GetOperationsTotalRequest) (resp *Get
 		WalletId: uint(walletId),
 	}
 
-	err = a.walletController.CheckWallets(resp.WalletId)
+	err = a.walletController.WalletsMustExist(resp.WalletId)
 	if err != nil {
 		return
 	}

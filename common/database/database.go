@@ -9,6 +9,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
 	"log"
 	"my-little-ps/common/config"
@@ -95,14 +96,20 @@ func AutoMigrate(config config.IConfig) error {
 	return nil
 }
 
-func (db *DB) createWhereQuery(criteria map[string]interface{}) *gorm.DB {
+func (db *DB) createWhereQuery(criteria map[string]interface{}, tryLocking bool) (query *gorm.DB) {
 	var (
 		ok     bool
 		offset interface{}
 		limit  interface{}
 	)
 
-	query := db.gormDB
+	if tryLocking {
+		query = db.gormDB.Clauses(clause.Locking{
+			Strength: "UPDATE",
+		})
+	} else {
+		query = db.gormDB
+	}
 
 	offset, ok = criteria["offset"]
 	if ok {
@@ -123,14 +130,14 @@ func (db *DB) createWhereQuery(criteria map[string]interface{}) *gorm.DB {
 	return query
 }
 
-func (db *DB) Last(record interface{}, criteria map[string]interface{}) error {
-	query := db.createWhereQuery(criteria)
+func (db *DB) Last(record interface{}, criteria map[string]interface{}, tryLocking bool) error {
+	query := db.createWhereQuery(criteria, tryLocking)
 
 	return query.Last(record).Error
 }
 
 func (db *DB) Has(record interface{}, criteria map[string]interface{}) (bool, error) {
-	query := db.createWhereQuery(criteria)
+	query := db.createWhereQuery(criteria, false)
 
 	err := query.Take(record).Error
 
@@ -145,8 +152,8 @@ func (db *DB) Has(record interface{}, criteria map[string]interface{}) (bool, er
 	return false, err
 }
 
-func (db *DB) Find(records interface{}, criteria map[string]interface{}) error {
-	query := db.createWhereQuery(criteria)
+func (db *DB) Find(records interface{}, criteria map[string]interface{}, tryLocking bool) error {
+	query := db.createWhereQuery(criteria, tryLocking)
 
 	return query.Find(records).Error
 }
@@ -161,4 +168,12 @@ func (db *DB) Create(value interface{}) error {
 
 func (db *DB) Save(value interface{}) error {
 	return db.gormDB.Save(value).Error
+}
+
+func (db *DB) Transaction(fc func(tx *DB) error) error {
+	return db.gormDB.Transaction(
+		func(tx *gorm.DB) error {
+			return fc(&DB{gormDB: tx,
+				ErrRecordNotFound: db.ErrRecordNotFound})
+		})
 }

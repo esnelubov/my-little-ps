@@ -10,4 +10,5 @@ type Wallet struct {
 	City     string
 	Currency string
 	Balance  int64
+	Worker   int32
 }
