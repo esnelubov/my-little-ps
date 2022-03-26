@@ -109,11 +109,16 @@ func (p *Processor) ProcessOperations(workerNumber int) (err error) {
 
 		for _, c := range chunks {
 			p.pool.RunTask(func() error {
-				return p.ProcessChunk(tx, c)
+				return p.ProcessChunk(c)
 			})
 		}
 
 		err = p.pool.WaitTasks().Error
+		if err != nil {
+			return err
+		}
+
+		err = saveRecords(tx, wallets, inOperations, outOperations)
 		if err != nil {
 			return err
 		}
@@ -123,7 +128,9 @@ func (p *Processor) ProcessOperations(workerNumber int) (err error) {
 }
 
 // ProcessChunk processes all operations for a wallet
-func (p *Processor) ProcessChunk(tx *database.DB, chunk *Chunk) (err error) {
+func (p *Processor) ProcessChunk(chunk *Chunk) (err error) {
+	p.logger.Debugf("Processing %d IN and %d OUT operations for wallet %d", len(chunk.InOperations), len(chunk.OutOperations), chunk.Wallet.ID)
+
 	var (
 		convertedAmount int64
 	)
@@ -136,15 +143,10 @@ func (p *Processor) ProcessChunk(tx *database.DB, chunk *Chunk) (err error) {
 
 		chunk.Wallet.Balance += convertedAmount
 		op.Status = constants.OpStatusSuccess
-
-		err = tx.Save(op)
-		if err != nil {
-			return
-		}
 	}
 
 	for _, op := range chunk.OutOperations {
-		convertedAmount, err = p.currencyCache.Convert(chunk.Wallet.Currency, op.Currency, op.Amount)
+		convertedAmount, err = p.currencyCache.Convert(op.Currency, chunk.Wallet.Currency, op.Amount)
 		if err != nil {
 			return
 		}
@@ -161,18 +163,9 @@ func (p *Processor) ProcessChunk(tx *database.DB, chunk *Chunk) (err error) {
 				return
 			}
 		}
-		err = tx.Save(op)
-		if err != nil {
-			return
-		}
 	}
 
 	p.logger.Debugf("Wallet %d has new balance: %d", chunk.Wallet.ID, chunk.Wallet.Balance)
-
-	err = tx.Save(chunk.Wallet)
-	if err != nil {
-		return
-	}
 
 	return
 }
@@ -234,6 +227,31 @@ func getOperationsForWorker(wn int, wc *wc.Controller, oc *oc.Controller, limit 
 	outOperations, err = oc.GetNewOutOperationsForWallets(ids, limit)
 	if err != nil {
 		return
+	}
+
+	return
+}
+
+func saveRecords(tx *database.DB, wallets []*models.Wallet, inOperations []*models.InOperation, outOperations []*models.OutOperation) (err error) {
+	for _, op := range inOperations {
+		err = tx.Save(op)
+		if err != nil {
+			return
+		}
+	}
+
+	for _, op := range outOperations {
+		err = tx.Save(op)
+		if err != nil {
+			return
+		}
+	}
+
+	for _, w := range wallets {
+		err = tx.Save(w)
+		if err != nil {
+			return
+		}
 	}
 
 	return

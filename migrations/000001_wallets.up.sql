@@ -11,6 +11,6 @@ CREATE TABLE IF NOT EXISTS wallets
     balance bigint NOT NULL DEFAULT 0,
     worker integer NOT NULL DEFAULT 0,
     CONSTRAINT wallets_pkey PRIMARY KEY (id)
-)
+);
 
 CREATE INDEX mlp_wallets_worker ON wallets (worker);

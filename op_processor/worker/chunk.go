@@ -16,6 +16,7 @@ func (c WalletToChunk) AddInOperation(op *models.InOperation) {
 		chunk = &Chunk{
 			InOperations: []*models.InOperation{},
 		}
+		c[op.TargetWalletId] = chunk
 	}
 	chunk.InOperations = append(chunk.InOperations, op)
 }
@@ -26,6 +27,7 @@ func (c WalletToChunk) AddOutOperation(op *models.OutOperation) {
 		chunk = &Chunk{
 			OutOperations: []*models.OutOperation{},
 		}
+		c[op.OriginWalletId] = chunk
 	}
 	chunk.OutOperations = append(chunk.OutOperations, op)
 }
@@ -34,6 +36,7 @@ func (c WalletToChunk) AddWallet(w *models.Wallet) {
 	chunk, ok := c[w.ID]
 	if !ok {
 		chunk = &Chunk{}
+		c[w.ID] = chunk
 	}
 	chunk.Wallet = w
 }

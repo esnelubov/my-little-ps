@@ -34,7 +34,7 @@ func setUpDependencies() {
 	Log = logger.New(Conf)
 	DB = database.New(Conf)
 	Scheduler = scheduler.New(Log, Conf)
-	Pool = pool.New(Conf)
+	Pool = pool.New(Log, Conf)
 	controllers.Setup(Log, DB)
 	CurrenciesCache = currency.New(Log, controllers.Currency)
 	Tasks = tasks.New(Log, CurrenciesCache)

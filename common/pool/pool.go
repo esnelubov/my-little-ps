@@ -4,30 +4,34 @@ import (
 	"errors"
 	"fmt"
 	"my-little-ps/common/config"
+	"my-little-ps/common/logger"
 	"sync"
 	"time"
 )
 
 type TaskPool struct {
+	logger   *logger.Log
 	tokens   chan struct{}
 	shutdown chan struct{}
 	wg       *sync.WaitGroup
 	Error    error
 }
 
-func New(config config.IConfig) *TaskPool {
+func New(logger *logger.Log, config config.IConfig) *TaskPool {
 	return &TaskPool{
+		logger:   logger,
 		tokens:   make(chan struct{}, config.GetInt64("maxPoolTasks")),
-		shutdown: make(chan struct{}),
+		shutdown: make(chan struct{}, 1),
 		wg:       &sync.WaitGroup{},
 	}
 }
 
 func (t *TaskPool) RunTask(fn func() error) {
+	t.wg.Add(1)
+
 	go func() {
 		select {
 		case t.tokens <- struct{}{}:
-			t.wg.Add(1)
 			defer func() { <-t.tokens; t.wg.Done() }()
 			err := fn()
 			if err != nil {
@@ -51,6 +55,8 @@ func (t *TaskPool) Shutdown() {
 }
 
 func (t *TaskPool) GracefulShutdown(timeout time.Duration) error {
+	t.logger.Debugf("Stopping pool gracefully, with timeout: %v", timeout)
+
 	t.Shutdown()
 
 	if !waitTimeout(t.wg, timeout) {
