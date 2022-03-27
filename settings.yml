@@ -13,4 +13,4 @@ maxPoolTasks: 32
 operationProcessorLimit: 1000  # How many operations to select from DB at the same time
 operationProcessorDelay: "1s"  # How often try to select new operations for processing
 walletBalancerLimit: 1000      # How many wallets to select from DB at the same time
-walletBalancerDelay: "48h"     # How often to perform rebalance of wallets between op_processor instances
+walletBalancerDelay: "30m"     # How often to perform rebalance of wallets between op_processor instances

@@ -92,6 +92,10 @@ func (p *Processor) ProcessOperations(workerNumber int) (err error) {
 
 		p.logger.Debugf("Found %d IN and %d OUT operations for %d wallets", len(inOperations), len(outOperations), len(wallets))
 
+		if len(inOperations) == 0 && len(outOperations) == 0 {
+			return
+		}
+
 		chunks := WalletToChunk{}
 
 		for _, op := range inOperations {

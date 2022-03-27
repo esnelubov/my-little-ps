@@ -21,7 +21,7 @@ func New(logger *logger.Log, config config.IConfig) *TaskPool {
 	return &TaskPool{
 		logger:   logger,
 		tokens:   make(chan struct{}, config.GetInt64("maxPoolTasks")),
-		shutdown: make(chan struct{}, 1),
+		shutdown: make(chan struct{}, config.GetInt64("maxPoolTasks")),
 		wg:       &sync.WaitGroup{},
 	}
 }

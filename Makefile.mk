@@ -1,4 +1,7 @@
-build: build-gateway build-op-processor build-wlt-balancer copy-migrations copy-settings
+build: go-mod-tidy build-gateway build-op-processor build-wlt-balancer copy-migrations copy-settings
+
+go-mod-tidy:
+	go mod tidy
 
 build-gateway:
 	go build -ldflags "-s -w" -o bin/gateway gateway/main.go
