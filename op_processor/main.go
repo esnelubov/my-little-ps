@@ -29,7 +29,7 @@ var (
 	Processor       *worker.Processor
 )
 
-func setUpDependencies() {
+var SetUpDependencies = func() {
 	Conf = config.New("settings")
 	Log = logger.New(Conf)
 	DB = database.New(Conf)
@@ -60,9 +60,9 @@ func main() {
 		fmt.Printf("\"Starting to process operations for wallets group %d ...\n", *workerNumber)
 	}
 
-	setUpDependencies()
-	setUpScheduler()
+	SetUpDependencies()
 
+	setUpScheduler()
 	Scheduler.Start()
 
 	shutdownTimeoutSec := Conf.GetDurationSec("shutdownTimeoutSec")

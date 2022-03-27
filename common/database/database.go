@@ -177,3 +177,7 @@ func (db *DB) Transaction(fc func(tx *DB) error) error {
 				ErrRecordNotFound: db.ErrRecordNotFound})
 		})
 }
+
+func (db *DB) TableName(table string) string {
+	return db.gormDB.NamingStrategy.TableName(table)
+}

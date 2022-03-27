@@ -5,6 +5,7 @@ import (
 	"my-little-ps/common/database"
 	"my-little-ps/common/logger"
 	"my-little-ps/common/models"
+	"strings"
 )
 
 type Controller struct {
@@ -58,13 +59,6 @@ func (c *Controller) WalletsMustExist(ids ...uint) (err error) {
 	return nil
 }
 
-func (c *Controller) GetAllWallets() (records []*models.Wallet, err error) {
-	c.logger.Debug("Getting all wallets")
-
-	err = c.DB.Find(&records, map[string]interface{}{}, c.withTransaction)
-	return
-}
-
 func (c *Controller) GetWalletsWithIds(ids []uint) (records []*models.Wallet, err error) {
 	c.logger.Debug("Getting wallets with given ids")
 
@@ -80,5 +74,23 @@ func (c *Controller) GetWalletsForWorker(number int) (records []*models.Wallet, 
 	c.logger.Debugf("Getting wallets for worker %d", number)
 
 	err = c.DB.Find(&records, map[string]interface{}{"worker = ?": number}, c.withTransaction)
+	return
+}
+
+func (c *Controller) GetAllWallets(offset int, limit int) (records []*models.Wallet, err error) {
+	c.logger.Debugf("Getting all wallets (offset %d, limit %d)", offset, limit)
+
+	err = c.DB.Find(&records, map[string]interface{}{"offset": offset, "limit": limit}, c.withTransaction)
+	return
+}
+
+func (c *Controller) CountWallets() (count int64, err error) {
+	c.logger.Debug("Counting all wallets")
+	var (
+		sql = "SELECT COUNT(*) AS wallet_count FROM {Table}"
+	)
+
+	sql = strings.Replace(sql, "{Table}", c.DB.TableName("wallets"), -1)
+	err = c.DB.Raw(&count, sql)
 	return
 }

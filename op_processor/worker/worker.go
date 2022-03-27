@@ -22,7 +22,6 @@ type Processor struct {
 	operationController *oc.Controller
 	currencyCache       *ch.CacheMap
 	shutDown            chan struct{}
-	processingFreq      time.Duration
 }
 
 func New(logger *logger.Log, config config.IConfig, db *database.DB, pool *pool.TaskPool, walletController *wc.Controller, operationController *oc.Controller, currencyCache *ch.CacheMap) *Processor {

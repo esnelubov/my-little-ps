@@ -7,6 +7,7 @@ import (
 	"my-little-ps/common/database"
 	"my-little-ps/common/logger"
 	"my-little-ps/common/models"
+	"strings"
 	"time"
 )
 
@@ -132,7 +133,48 @@ func (c *Controller) GetNewOutOperationsForWallets(wallets []uint, limit int) (r
 	if len(wallets) == 0 {
 		return []*models.OutOperation{}, nil
 	}
-	
+
 	err = c.DB.Find(&records, map[string]interface{}{"origin_wallet_id IN ?": wallets, "status = ?": constants.OpStatusNew, "limit": limit}, c.withTransaction)
+	return
+}
+
+func (c *Controller) CountOperationsPerWallet(from time.Time) (counts map[int64]int64, err error) {
+	c.logger.Debugf("Counting ALL operations from %v per wallet", from)
+
+	var (
+		sqlIn   = "SELECT target_wallet_id AS wallet_id, COUNT(*) AS op_count FROM {Table} WHERE created_at > ? GROUP BY target_wallet_id"
+		sqlOut  = "SELECT origin_wallet_id AS wallet_id, COUNT(*) AS op_count FROM {Table} WHERE created_at > ? GROUP BY origin_wallet_id"
+		results []map[string]interface{}
+	)
+
+	counts = make(map[int64]int64)
+
+	countResults := func(results []map[string]interface{}) {
+		for _, r := range results {
+			count, ok := counts[r["wallet_id"].(int64)]
+			if !ok {
+				count = 0
+			}
+
+			counts[r["wallet_id"].(int64)] = r["op_count"].(int64) + count
+		}
+	}
+
+	results = []map[string]interface{}{}
+	sqlIn = strings.Replace(sqlIn, "{Table}", c.DB.TableName("in_operations"), -1)
+	err = c.DB.Raw(&results, sqlIn, from)
+	if err != nil {
+		return
+	}
+	countResults(results)
+
+	results = []map[string]interface{}{}
+	sqlOut = strings.Replace(sqlOut, "{Table}", c.DB.TableName("out_operations"), -1)
+	err = c.DB.Raw(&results, sqlOut, from)
+	if err != nil {
+		return
+	}
+	countResults(results)
+
 	return
 }

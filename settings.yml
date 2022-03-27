@@ -1,14 +1,16 @@
 ip: "127.0.0.1:4567"
 env: "dev"
-autoMigrate: true
 dsn: "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
 schemaName: "my_little_ps"
+autoMigrate: true              # Automatically apply migrations at start
 location: "UTC"
-prefork: false
+prefork: false                 # Run the gateway on all cores
 idleTimeoutSec: 15
 readTimeoutSec: 15
 writeTimeoutSec: 15
-shutdownTimeoutSec: 60
+shutdownTimeoutSec: 60         # How long to wait for graceful shutdown
 maxPoolTasks: 32
-operationProcessorLimit: 1000
-operationProcessorDelay: "1s"
+operationProcessorLimit: 1000  # How many operations to select from DB at the same time
+operationProcessorDelay: "1s"  # How often try to select new operations for processing
+walletBalancerLimit: 1000      # How many wallets to select from DB at the same time
+walletBalancerDelay: "48h"     # How often to perform rebalance of wallets between op_processor instances

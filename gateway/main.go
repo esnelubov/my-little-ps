@@ -29,6 +29,17 @@ var (
 	Tasks           *tasks.Tasks
 )
 
+var SetUpDependencies = func() {
+	Conf = config.New("settings")
+	Log = logger.New(Conf)
+	DB = database.New(Conf)
+	Scheduler = scheduler.New(Log, Conf)
+	controllers.Setup(Log, DB)
+	CurrenciesCache = currency.New(Log, controllers.Currency)
+	Tasks = tasks.New(Log, CurrenciesCache)
+	api.Setup(Log, controllers.Wallet, controllers.Operation, controllers.Currency, CurrenciesCache)
+}
+
 func setUpRoutes(a *app.App) {
 	fmt.Println("Setting up routes")
 
@@ -51,23 +62,12 @@ func setUpScheduler() {
 	Tasks.UpdateCurrencyCache()
 }
 
-func setUpDependencies() {
-	Conf = config.New("settings")
-	Log = logger.New(Conf)
-	DB = database.New(Conf)
-	Scheduler = scheduler.New(Log, Conf)
-	controllers.Setup(Log, DB)
-	CurrenciesCache = currency.New(Log, controllers.Currency)
-	Tasks = tasks.New(Log, CurrenciesCache)
-	api.Setup(Log, controllers.Wallet, controllers.Operation, controllers.Currency, CurrenciesCache)
-}
-
 func main() {
 	fmt.Println("Starting the gateway...")
 
-	setUpDependencies()
-	setUpScheduler()
+	SetUpDependencies()
 
+	setUpScheduler()
 	Scheduler.Start()
 
 	shutdownTimeoutSec := Conf.GetDurationSec("shutdownTimeoutSec")
